@@ -1,0 +1,84 @@
+
+CREATE DATABASE AirportDisplay
+	ON
+	( NAME = AirportDisplay_dat,
+		FILENAME = 'C:\SQL\DATA\AirportDisplay\AirportDisplay.mdf', SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB)
+	LOG ON
+	( NAME = AirportDisplay_log,
+		FILENAME = 'C:\SQL\DATA\AirportDisplay\AirportDisplay.ldf', SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB)
+	WITH CATALOG_COLLATION = DATABASE_DEFAULT;
+	GO
+
+	USE AirportDisplay
+	GO 
+
+
+-- Tables:
+
+-- SELECT * FROM Flight
+-- DROP TABLE Flight
+CREATE TABLE Flight (FlightID INT IDENTITY(1,1) NOT NULL, Flight NVARCHAR(5) NOT NULL)
+
+ALTER TABLE Flight ADD CONSTRAINT PK_FlightID PRIMARY KEY (FlightID);
+GO
+
+-- SELECT * FROM Airport
+-- DROP TABLE Airport
+CREATE TABLE Airport (AirportID SMALLINT IDENTITY(1,1) NOT NULL, Airport NVARCHAR(30) NOT NULL)
+
+ALTER TABLE Airport ADD CONSTRAINT PK_AirportID PRIMARY KEY (AirportID);
+GO
+
+-- SELECT * FROM Schedule
+-- DROP TABLE Schedule
+CREATE TABLE Schedule (ScheduleID TINYINT IDENTITY(1,1) NOT NULL, Schedule NVARCHAR(8) NOT NULL)
+
+ALTER TABLE Schedule ADD CONSTRAINT PK_ScheduleID PRIMARY KEY (ScheduleID);
+GO
+
+-- SELECT * FROM Gate
+-- DROP TABLE Gate
+CREATE TABLE Gate (GateID TINYINT NOT NULL, Gate TINYINT NOT NULL  CONSTRAINT DF_Gate DEFAULT 0)
+
+ALTER TABLE Gate ADD CONSTRAINT PK_GateID PRIMARY KEY (GateID);
+GO
+
+-- SELECT * FROM ArrivingFlight
+-- DROP TABLE ArrivingFlight
+-- SELECT * FROM ArrivingFlight
+CREATE TABLE ArrivingFlight (FlightID INT NOT NULL, ArrivalTime DATETIME NOT NULL CONSTRAINT CHK_ArrivalTime CHECK (CONVERT(TIME, ArrivalTime) >  CONVERT(TIME, GETDATE())), AirportID SMALLINT NOT NULL,
+					 ScheduleID TINYINT, GateID TINYINT NOT NULL);
+GO
+
+-- SELECT * FROM DepartingFlight
+-- DROP TABLE DepartingFlight
+CREATE TABLE DepartingFlight (FlightID INT NOT NULL, StartTime DateTime NOT NULL CONSTRAINT CHK_StartTime CHECK (CONVERT(TIME, StartTime) >  CONVERT(TIME, GETDATE())), AirportID SMALLINT NOT NULL,
+					 ScheduleID TINYINT, GateID TINYINT NOT NULL);
+GO
+
+-- Data Update:
+INSERT INTO Flight (Flight)  VALUES ('AL563'), ('LG445'), ('KG386'), ('MG777'), ('TZ428'), ('GM413'), ('HZ812');
+INSERT INTO Airport (Airport)  VALUES ('Budapest'), ('London'), ('Parizs'), ('New York'), ('Roma'), ('Bonn'), ('Isztambul');
+INSERT INTO Schedule (Schedule)  VALUES ('On Time'), ('Delayed'), ('Canceled');
+INSERT INTO Gate (GateID, Gate)  VALUES (1, 0), (2, 1),(3, 2), (4, 3), (5, 4), (6, 5), (7, 6), (8, 7), (9, 8), (10, 9), (11, 10), (12, 11), (13, 12), (14, 13), (15, 14), (16, 15), (17, 16);
+INSERT INTO ArrivingFlight (FlightID, ArrivalTime, AirportID, ScheduleID, GateID) VALUES (1, '21:12:25', 1, 1, 3), (2, '21:02:50', 2, 3, 11), (3, '21:28:23', 4, 2, 9), (4, '21:21:25', 5, 1, 4);
+INSERT INTO DepartingFlight (FlightID, StartTime, AirportID, ScheduleID, GateID) VALUES (5, '21:02:05', 4, 1, 13), (6, '21:02:50', 6, 1, 7), (7, '21:20:13', 6, 2, 15), (1, '21:32:52', 7, 1, 11);
+
+-- FOREIGN KEY:
+ALTER TABLE ArrivingFlight ADD CONSTRAINT FK_ArrivingFlight_FlightID FOREIGN KEY (FlightID) REFERENCES Flight (FlightID);
+ALTER TABLE DepartingFlight ADD CONSTRAINT FK_DepartingFlight_FlightID FOREIGN KEY (FlightID) REFERENCES Flight (FlightID);
+ALTER TABLE ArrivingFlight ADD CONSTRAINT FK_ArrivingFlight_AirportID FOREIGN KEY (AirportID) REFERENCES Airport (AirportID);
+ALTER TABLE DepartingFlight ADD CONSTRAINT FK_DepartingFlight_AirportID FOREIGN KEY (AirportID) REFERENCES Airport (AirportID);
+ALTER TABLE ArrivingFlight ADD CONSTRAINT FK_ArrivingFlight_ScheduleID FOREIGN KEY (ScheduleID) REFERENCES Schedule (ScheduleID);
+ALTER TABLE DepartingFlight ADD CONSTRAINT FK_DepartingFlight_ScheduleID FOREIGN KEY (ScheduleID) REFERENCES Schedule (ScheduleID);
+ALTER TABLE ArrivingFlight ADD CONSTRAINT FK_ArrivingFlight_GateID FOREIGN KEY (GateID) REFERENCES Gate (GateID);
+ALTER TABLE DepartingFlight ADD CONSTRAINT FK_DepartingFlight_GateID FOREIGN KEY (GateID) REFERENCES Gate (GateID);
+
+/*
+DROP TABLE ArrivingFlight
+DROP TABLE DepartingFlight
+DROP TABLE Gate
+DROP TABLE Schedule
+DROP TABLE Airport
+DROP TABLE Flight
+*/
